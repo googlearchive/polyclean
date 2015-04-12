@@ -12,12 +12,30 @@ var escodegen, esprima, through2, transform, traverse;
 escodegen = require('escodegen');
 espree = require('espree');
 through2 = require('through2');
+dom5 = require('dom5')
 
 var exports = {
+  /**
+   * Gulp plugin that removes comments with a parser roundtrip.
+   */
   cleanJsComments: function cleanJsComments() {
+    var p = dom5.predicates;
     return through2.obj(function(file, encoding, cb) {
-      var parsedHtml = espree.parse(String(file.contents));
-      file.contents = new Buffer(escodegen.generate(file.ast));
+      var parsedHtml = dom5.parse(String(file.contents));
+      var isInlineScript = p.AND(
+        p.hasTagName('script'),
+        p.NOT(p.hasAttr('src'))
+      );
+      dom5.queryAll(parsedHtml, isInlineScript)
+        .forEach(function(inlineScript) {
+          var text = dom5.getTextContent(inlineScript);
+          content = espree.parse(text, {attachComment: false, comments: false});
+          dom5.setTextContent(inlineScript,
+            escodegen.generate(content)
+            );
+        });
+      file.contents = new Buffer(dom5.serialize(parsedHtml));
+      this.push(file);
       return cb();
     });
   }

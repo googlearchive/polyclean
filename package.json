@@ -1,11 +1,12 @@
 {
   "name": "polyclean",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Basic html hygiene.",
   "main": "index.js",
   "author": "",
   "repository": "https://github.com/PolymerLabs/polyclean.git",
   "dependencies": {
+    "dom5": "^1.0.1",
     "escodegen": "^1.6.1",
     "espree": "^2.0.1",
     "through2": "^0.6.5"
