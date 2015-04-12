@@ -7,12 +7,10 @@
  * Code distributed by Google as part of the polymer project is also
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
-var escodegen, esprima, through2, transform, traverse;
-
-escodegen = require('escodegen');
-espree = require('espree');
-through2 = require('through2');
-dom5 = require('dom5')
+var escodegen = require('escodegen');
+var espree = require('espree');
+var through2 = require('through2');
+var dom5 = require('dom5')
 
 var exports = {
   /**
