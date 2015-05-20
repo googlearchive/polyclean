@@ -1,6 +1,6 @@
 {
   "name": "polyclean",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Basic html hygiene.",
   "main": "index.js",
   "author": "",
