@@ -3,13 +3,20 @@
   "version": "1.0.0",
   "description": "Basic html hygiene.",
   "main": "index.js",
-  "author": "",
+  "author": "The Polymer Project Authors",
+  "license": "BSD-3-Clause",
   "repository": "https://github.com/PolymerLabs/polyclean.git",
+  "scripts": {
+    "test": "node_modules/.bin/jshint --verbose index.js"
+  },
   "dependencies": {
     "dom5": "^1.0.1",
     "escodegen": "^1.6.1",
     "espree": "^2.0.1",
     "through2": "^0.6.5",
     "uglify-js": "^2.4.19"
+  },
+  "devDependencies": {
+    "jshint": "^2.7.0"
   }
 }
