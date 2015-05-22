@@ -48,6 +48,29 @@ var exports = {
   },
 
   /**
+   * Left align all the javascript
+   * Leave newlines, as they can be useful for debugging
+   */
+  leftAlignJs: function leftAlignJs() {
+    return through2.obj(function(file, encoding, cb) {
+      var cleaned = filterInlineScript(String(file.contents), function(text) {
+        return uglify.minify(text, {
+          fromString: true,
+          mangle: false,
+          compress: false,
+          output: {
+            beautify: true,
+            indent_level: 0
+          }
+        }).code;
+      });
+      file.contents = new Buffer(cleaned);
+      this.push(file);
+      return cb();
+    });
+  },
+
+  /**
    * Uglify the stream.
    */
   uglifyJs: function uglifyJs() {
