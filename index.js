@@ -16,6 +16,7 @@ var escodegen = require('escodegen');
 var espree = require('espree');
 var through2 = require('through2');
 var uglify = require('uglify-js');
+var PluginError = require('plugin-error');
 
 /**
  * Transforms all inline scripts in `html` with `filter`.
@@ -50,22 +51,43 @@ function filterInlineStyles(html, filter) {
   return dom5.serialize(parsedHtml);
 }
 
+var ESPREE_OPTIONS = {
+  attachComment: false,
+  comments: false
+};
+
+var LEFT_ALIGN_OPTIONS = {
+  format: {
+    indent: {
+      style: ''
+    }
+  }
+};
+
+function parse(text) {
+  return espree.parse(text, ESPREE_OPTIONS);
+}
+
+function codegen(ast, options) {
+  return escodegen.generate(ast, options);
+}
+
 var exports = {
   /**
    * Gulp plugin that removes comments with a parser roundtrip.
    */
   cleanJsComments: function cleanJsComments() {
     return through2.obj(function(file, encoding, cb) {
-      var cleaned = filterInlineScript(String(file.contents), function(text) {
-        var content = espree.parse(text, {
-          attachComment: false,
-          comments: false
+      try {
+        var cleaned = filterInlineScript(String(file.contents), function(text) {
+          return codegen(parse(text));
         });
-        return escodegen.generate(content);
-      });
-      file.contents = new Buffer(cleaned);
-      this.push(file);
-      return cb();
+        file.contents = new Buffer(cleaned);
+        cb(null, file);
+      } catch (e) {
+        var err = new PluginError('polyclean', e);
+        cb(err);
+      }
     });
   },
 
@@ -75,20 +97,16 @@ var exports = {
    */
   leftAlignJs: function leftAlignJs() {
     return through2.obj(function(file, encoding, cb) {
-      var cleaned = filterInlineScript(String(file.contents), function(text) {
-        return uglify.minify(text, {
-          fromString: true,
-          mangle: false,
-          compress: false,
-          output: {
-            beautify: true,
-            indent_level: 0
-          }
-        }).code;
-      });
-      file.contents = new Buffer(cleaned);
-      this.push(file);
-      return cb();
+      try {
+        var cleaned = filterInlineScript(String(file.contents), function(text) {
+          return codegen(parse(text), LEFT_ALIGN_OPTIONS);
+        });
+        file.contents = new Buffer(cleaned);
+        cb(null, file);
+      } catch (e) {
+        var err = new PluginError('polyclean', e);
+        cb(err);
+      }
     });
   },
 
@@ -97,14 +115,18 @@ var exports = {
    */
   uglifyJs: function uglifyJs() {
     return through2.obj(function(file, encoding, cb) {
-      var cleaned = filterInlineScript(String(file.contents), function(text) {
-        return uglify.minify(text, {
-          fromString: true
-        }).code;
-      });
-      file.contents = new Buffer(cleaned);
-      this.push(file);
-      return cb();
+      try {
+        var cleaned = filterInlineScript(String(file.contents), function(text) {
+          return uglify.minify(text, {
+            fromString: true
+          }).code;
+        });
+        file.contents = new Buffer(cleaned);
+        cb(null, file);
+      } catch (e) {
+        var err = new PluginError('polyclean', e);
+        cb(err);
+      }
     });
   },
 
