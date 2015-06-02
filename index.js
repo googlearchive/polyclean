@@ -135,16 +135,20 @@ var exports = {
    */
   cleanCss: function cleanCss() {
     return through2.obj(function(file, enc, cb) {
-      var cleaned = filterInlineStyles(String(file.contents), function(text) {
-        // remove newlines
-        return text.replace(/[\r\n]/g, '')
-        // remove 2 or more spaces
-        // (single spaces can be syntactically significant)
-        .replace(/ {2,}/g, '');
-      });
-      file.contents = new Buffer(cleaned);
-      this.push(file);
-      return cb();
+      try {
+        var cleaned = filterInlineStyles(String(file.contents), function(text) {
+          // remove newlines
+          return text.replace(/[\r\n]/g, '')
+          // remove 2 or more spaces
+          // (single spaces can be syntactically significant)
+          .replace(/ {2,}/g, '');
+        });
+        file.contents = new Buffer(cleaned);
+        cb(null, file);
+      } catch (e) {
+        var err = new PluginError('polyclean', e);
+        cb(err);
+      }
     });
   }
 };
