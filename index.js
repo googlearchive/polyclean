@@ -139,9 +139,11 @@ var exports = {
         var cleaned = filterInlineStyles(String(file.contents), function(text) {
           // remove newlines
           return text.replace(/[\r\n]/g, '')
-          // remove 2 or more spaces
-          // (single spaces can be syntactically significant)
-          .replace(/ {2,}/g, '');
+          // reduce 2 or more spaces to one
+          // and remove all leading and trailing spaces
+          .replace(/ {2,}/g, ' ')
+          .replace(/(^|[;,\:\{\}]) /g, '$1')
+          .replace(/ ($|[;,\:\{\}])/g, '$1');
         });
         file.contents = new Buffer(cleaned);
         cb(null, file);
