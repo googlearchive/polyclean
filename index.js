@@ -131,20 +131,25 @@ var exports = {
   },
 
   /**
+   * Remove CSS Whitespace from text
+   */
+  stripCss: function stripCss(text) {
+    return text.replace(/[\r\n]/g, '')
+      // reduce 2 or more spaces to one
+      // and remove all leading and trailing spaces
+      .replace(/ {2,}/g, ' ')
+      .replace(/(^|[;,\:\{\}]) /g, '$1')
+      .replace(/ ($|[;,\{\}])/g, '$1');
+  },
+
+  /**
    * Remove CSS Whitespace
    */
   cleanCss: function cleanCss() {
+    var stripCss = this.stripCss;
     return through2.obj(function(file, enc, cb) {
       try {
-        var cleaned = filterInlineStyles(String(file.contents), function(text) {
-          // remove newlines
-          return text.replace(/[\r\n]/g, '')
-          // reduce 2 or more spaces to one
-          // and remove all leading and trailing spaces
-          .replace(/ {2,}/g, ' ')
-          .replace(/(^|[;,\:\{\}]) /g, '$1')
-          .replace(/ ($|[;,\:\{\}])/g, '$1');
-        });
+        var cleaned = filterInlineStyles(String(file.contents), stripCss);
         file.contents = new Buffer(cleaned);
         cb(null, file);
       } catch (e) {
