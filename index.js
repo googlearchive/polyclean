@@ -113,13 +113,14 @@ var exports = {
   /**
    * Uglify the stream.
    */
-  uglifyJs: function uglifyJs() {
+  uglifyJs: function uglifyJs(options) {
+    options = options || {};
+    options.fromString = true;
+
     return through2.obj(function(file, encoding, cb) {
       try {
         var cleaned = filterInlineScript(String(file.contents), function(text) {
-          return uglify.minify(text, {
-            fromString: true
-          }).code;
+          return uglify.minify(text, options).code;
         });
         file.contents = new Buffer(cleaned);
         cb(null, file);
