@@ -7,7 +7,7 @@
   "license": "BSD-3-Clause",
   "repository": "https://github.com/PolymerLabs/polyclean.git",
   "scripts": {
-    "test": "node_modules/.bin/jshint --verbose index.js"
+    "test": "node_modules/.bin/jshint --verbose index.js test/test.js && mocha"
   },
   "dependencies": {
     "dom5": "^1.0.1",
@@ -15,9 +15,13 @@
     "espree": "^2.0.1",
     "plugin-error": "^0.1.1",
     "through2": "^0.6.5",
-    "uglify-js": "^2.4.19"
+    "uglify-js": "^2.4.19",
+    "tape": "~4.2.2",
+    "faucet": "0.0.1"
   },
   "devDependencies": {
-    "jshint": "^2.7.0"
+    "chai": "^3.4.0",
+    "jshint": "^2.6.3",
+    "mocha": "^2.2.3"
   }
 }
