@@ -14,10 +14,8 @@
     "escodegen": "^1.6.1",
     "espree": "^2.0.1",
     "plugin-error": "^0.1.1",
-    "through2": "^0.6.5",
-    "uglify-js": "^2.4.19",
-    "tape": "~4.2.2",
-    "faucet": "0.0.1"
+    "through2": "^2.0.0",
+    "uglify-js": "^2.4.19"
   },
   "devDependencies": {
     "chai": "^3.4.0",
