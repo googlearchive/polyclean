@@ -147,10 +147,9 @@ var exports = {
    * Remove CSS Whitespace
    */
   cleanCss: function cleanCss() {
-    var stripCss = this.stripCss;
     return through2.obj(function(file, enc, cb) {
       try {
-        var cleaned = filterInlineStyles(String(file.contents), stripCss);
+        var cleaned = filterInlineStyles(String(file.contents), exports.stripCss);
         file.contents = new Buffer(cleaned);
         cb(null, file);
       } catch (e) {
