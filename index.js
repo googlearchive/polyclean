@@ -62,10 +62,12 @@ function filterInlineStyles(html, filter) {
 function formatError(err, file, encoding){
 
   // Get some context
-  var context = file.contents.toString(encoding || 'utf-8').split('\n').splice(err.line - 2, 4).join('\n');
+  var context = file.contents.toString(encoding || 'utf-8').split('\n').splice(err.line - 2, 4).map(function(line, index){
+    return (err.line - 1 + index) + ': ' + line;
+  }).join('\n');
 
   return { 
-    message: [err.message, 'at', file.path + ':' + err.line + ':' + err.col, '\n', 'Context:\n', context, '\n'].join(' '), 
+    message: [err.message, ' at ', file.path, ':', err.line, ':', err.col, '\n', 'Context:\n', context, '\n'].join(''), 
     stack: err.stack || null
   }
 }
