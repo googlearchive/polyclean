@@ -21,7 +21,7 @@ var PluginError = require('plugin-error');
 /**
  * Transforms all inline scripts in `html` with `filter`.
  */
-function filterInlineScript(html, filter) {
+function filterInlineScript(html, filter, cb) {
   var p = dom5.predicates;
   var parsedHtml = dom5.parse(html);
   var isInlineScript = p.AND(
@@ -31,9 +31,14 @@ function filterInlineScript(html, filter) {
   dom5.queryAll(parsedHtml, isInlineScript)
     .forEach(function(inlineScript) {
       var text = dom5.getTextContent(inlineScript);
-      dom5.setTextContent(inlineScript, filter(text));
+      try {
+        dom5.setTextContent(inlineScript, filter(text));
+      } catch(e) {
+        var err = new PluginError('polyclean', formatError(e, { path: 'Inline Script', contents: new Buffer(text) }));
+        cb(err);
+      }
     });
-  return dom5.serialize(parsedHtml);
+  cb(null, dom5.serialize(parsedHtml));
 }
 
 /**
@@ -50,6 +55,21 @@ function filterInlineStyles(html, filter) {
     });
   return dom5.serialize(parsedHtml);
 }
+
+/**
+ * Format error message with error location
+ */
+function formatError(err, file, encoding){
+
+  // Get some context
+  var context = file.contents.toString(encoding || 'utf-8').split('\n').splice(err.line - 2, 4).join('\n');
+
+  return { 
+    message: [err.message, 'at', file.path + ':' + err.line + ':' + err.col, '\n', 'Context:\n', context, '\n'].join(' '), 
+    stack: err.stack || null
+  }
+}
+
 
 var ESPREE_OPTIONS = {
   attachComment: false,
@@ -79,13 +99,14 @@ var exports = {
   cleanJsComments: function cleanJsComments() {
     return through2.obj(function(file, encoding, cb) {
       try {
-        var cleaned = filterInlineScript(String(file.contents), function(text) {
+        filterInlineScript(String(file.contents), function(text) {
           return codegen(parse(text));
+        }, function(err, cleaned){
+          cleaned && (file.contents = new Buffer(cleaned));
+          cb(err, file);  
         });
-        file.contents = new Buffer(cleaned);
-        cb(null, file);
       } catch (e) {
-        var err = new PluginError('polyclean', e);
+        var err = new PluginError('polyclean', formatError(e, file, encoding));
         cb(err);
       }
     });
@@ -98,13 +119,14 @@ var exports = {
   leftAlignJs: function leftAlignJs() {
     return through2.obj(function(file, encoding, cb) {
       try {
-        var cleaned = filterInlineScript(String(file.contents), function(text) {
+        filterInlineScript(String(file.contents), function(text) {
           return codegen(parse(text), LEFT_ALIGN_OPTIONS);
+        }, function(err, cleaned){
+          cleaned && (file.contents = new Buffer(cleaned));
+          cb(err, file);  
         });
-        file.contents = new Buffer(cleaned);
-        cb(null, file);
       } catch (e) {
-        var err = new PluginError('polyclean', e);
+        var err = new PluginError('polyclean', formatError(e, file, encoding));
         cb(err);
       }
     });
@@ -119,13 +141,14 @@ var exports = {
 
     return through2.obj(function(file, encoding, cb) {
       try {
-        var cleaned = filterInlineScript(String(file.contents), function(text) {
+        filterInlineScript(String(file.contents), function(text) {
           return uglify.minify(text, options).code;
+        }, function(err, cleaned){
+          cleaned && (file.contents = new Buffer(cleaned));
+          cb(err, file);  
         });
-        file.contents = new Buffer(cleaned);
-        cb(null, file);
       } catch (e) {
-        var err = new PluginError('polyclean', e);
+        var err = new PluginError('polyclean', formatError(e, file, encoding));
         cb(err);
       }
     });
@@ -147,13 +170,13 @@ var exports = {
    * Remove CSS Whitespace
    */
   cleanCss: function cleanCss() {
-    return through2.obj(function(file, enc, cb) {
+    return through2.obj(function(file, encoding, cb) {
       try {
         var cleaned = filterInlineStyles(String(file.contents), exports.stripCss);
         file.contents = new Buffer(cleaned);
         cb(null, file);
       } catch (e) {
-        var err = new PluginError('polyclean', e);
+        var err = new PluginError('polyclean', formatError(e, file, encoding));
         cb(err);
       }
     });
