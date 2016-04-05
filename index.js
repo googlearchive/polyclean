@@ -53,7 +53,8 @@ function filterInlineStyles(html, filter) {
 
 var ESPREE_OPTIONS = {
   attachComment: false,
-  comments: false
+  comments: false,
+  ecmaVersion: 6
 };
 
 var LEFT_ALIGN_OPTIONS = {
